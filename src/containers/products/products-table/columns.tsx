@@ -39,6 +39,7 @@ import { Product } from "@/types/product";
 import { SkeletonColumn } from "@/types/skeleton";
 import { useProductMutations } from "@/hooks/mutations/useProductMutations";
 import EditProductForm from "../edit-product-form";
+import React from "react";
 
 export const columns = (): ColumnDef<Product>[] => {
   const { updateProduct, deleteProduct } = useProductMutations();
@@ -137,72 +138,80 @@ export const columns = (): ColumnDef<Product>[] => {
     },
     {
       header: "actions",
-      cell: ({ row }) => (
-        <div className="flex items-center gap-2">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" className="size-8" asChild>
-                <Link href={`/products/${row.original.id}`}>
-                  <ZoomIn className="size-4" />
-                </Link>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>View details</TooltipContent>
-          </Tooltip>
+      cell: ({ row }) => {
+        const [open, setOpen] = React.useState(false);
 
-          <Sheet>
+        const handleSuccess = () => {
+          setOpen(false);
+        };
+
+        return (
+          <div className="flex items-center gap-2">
             <Tooltip>
               <TooltipTrigger asChild>
-                <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon" className="size-8">
-                    <PenSquare className="size-4" />
-                  </Button>
-                </SheetTrigger>
+                <Button variant="ghost" size="icon" className="size-8" asChild>
+                  <Link href={`/products/${row.original.id}`}>
+                    <ZoomIn className="size-4" />
+                  </Link>
+                </Button>
               </TooltipTrigger>
-              <TooltipContent>Edit product</TooltipContent>
+              <TooltipContent>View details</TooltipContent>
             </Tooltip>
 
-            <SheetContent>
-              <SheetHeader>
-                <SheetTitle>Edit product</SheetTitle>
-                <SheetDescription>
-                  Make changes to the product here. Click save when you&apos;re done.
-                </SheetDescription>
-              </SheetHeader>
-              <EditProductForm product={row.original} />
-            </SheetContent>
-          </Sheet>
+            <Sheet open={open} onOpenChange={setOpen}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <SheetTrigger asChild>
+                    <Button variant="ghost" size="icon" className="size-8">
+                      <PenSquare className="size-4" />
+                    </Button>
+                  </SheetTrigger>
+                </TooltipTrigger>
+                <TooltipContent>Edit product</TooltipContent>
+              </Tooltip>
 
-          <AlertDialog>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <AlertDialogTrigger asChild>
-                  <Button variant="ghost" size="icon" className="size-8">
-                    <Trash2 className="size-4" />
-                  </Button>
-                </AlertDialogTrigger>
-              </TooltipTrigger>
-              <TooltipContent>Delete product</TooltipContent>
-            </Tooltip>
+              <SheetContent>
+                <SheetHeader>
+                  <SheetTitle>Edit product</SheetTitle>
+                  <SheetDescription>
+                    Make changes to the product here. Click save when you're done.
+                  </SheetDescription>
+                </SheetHeader>
+                <EditProductForm product={row.original} onSuccess={handleSuccess} />
+              </SheetContent>
+            </Sheet>
 
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This action cannot be undone. This will permanently delete the
-                  product from the database.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={() => deleteProduct(row.original.id)}>
-                  Delete
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </div>
-      ),
+            <AlertDialog>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="ghost" size="icon" className="size-8">
+                      <Trash2 className="size-4" />
+                    </Button>
+                  </AlertDialogTrigger>
+                </TooltipTrigger>
+                <TooltipContent>Delete product</TooltipContent>
+              </Tooltip>
+
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete the
+                    product from the database.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => deleteProduct(row.original.id)}>
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+        );
+      },
     },
   ];
 };

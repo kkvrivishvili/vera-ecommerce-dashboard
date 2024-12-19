@@ -17,7 +17,20 @@ export function useProductMutations() {
         throw new Error(error.message || 'Failed to create product');
       }
     },
-    onSuccess: () => {
+    onSuccess: (newProduct) => {
+      // Actualizar el caché optimistamente
+      queryClient.setQueryData(
+        ["products"],
+        (old: any) => {
+          if (!old) return { items: [newProduct], meta: { total: 1, page: 1, pages: 1, per_page: 10 } };
+          return {
+            ...old,
+            items: [newProduct, ...old.items],
+            meta: { ...old.meta, total: old.meta.total + 1 }
+          };
+        }
+      );
+      // Invalidar todas las queries de productos para asegurar consistencia
       queryClient.invalidateQueries({ queryKey: ["products"] });
       toast({
         title: "Success",
@@ -43,7 +56,21 @@ export function useProductMutations() {
         throw new Error(error.message || 'Failed to update product');
       }
     },
-    onSuccess: () => {
+    onSuccess: (updatedProduct, { id }) => {
+      // Actualizar el caché optimistamente
+      queryClient.setQueryData(
+        ["products"],
+        (old: any) => {
+          if (!old) return old;
+          return {
+            ...old,
+            items: old.items.map((item: Product) =>
+              item.id === id ? { ...item, ...updatedProduct } : item
+            ),
+          };
+        }
+      );
+      // Invalidar todas las queries de productos para asegurar consistencia
       queryClient.invalidateQueries({ queryKey: ["products"] });
       toast({
         title: "Success",
@@ -69,7 +96,20 @@ export function useProductMutations() {
         throw new Error(error.message || 'Failed to delete product');
       }
     },
-    onSuccess: () => {
+    onSuccess: (_, id) => {
+      // Actualizar el caché optimistamente
+      queryClient.setQueryData(
+        ["products"],
+        (old: any) => {
+          if (!old) return old;
+          return {
+            ...old,
+            items: old.items.filter((item: Product) => item.id !== id),
+            meta: { ...old.meta, total: Math.max(0, old.meta.total - 1) }
+          };
+        }
+      );
+      // Invalidar todas las queries de productos para asegurar consistencia
       queryClient.invalidateQueries({ queryKey: ["products"] });
       toast({
         title: "Success",
@@ -89,6 +129,8 @@ export function useProductMutations() {
     createProduct: createMutation.mutateAsync,
     updateProduct: updateMutation.mutateAsync,
     deleteProduct: deleteMutation.mutateAsync,
-    isLoading: createMutation.isPending || updateMutation.isPending || deleteMutation.isPending,
+    isCreating: createMutation.isPending,
+    isUpdating: updateMutation.isPending,
+    isDeleting: deleteMutation.isPending,
   };
 }

@@ -20,4 +20,6 @@ export interface PaginationProps {
   pages: number;
   current: number;
   perPage: number;
+  prev: number | null;
+  next: number | null;
 }

@@ -1,4 +1,5 @@
 import { Upload, Download, PenSquare, Trash2, Plus } from "lucide-react";
+import React from "react";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -13,6 +14,12 @@ import {
 import CreateProduct from "./create-product";
 
 export default function ProductActions() {
+  const [open, setOpen] = React.useState(false);
+
+  const handleSuccess = () => {
+    setOpen(false);
+  };
+
   return (
     <Card className="mb-5">
       <form className="flex flex-col xl:flex-row xl:justify-between gap-4">
@@ -45,7 +52,7 @@ export default function ProductActions() {
             <Trash2 className="mr-2 size-4" /> Delete
           </Button>
 
-          <Sheet>
+          <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
               <Button
                 variant="default"
@@ -64,7 +71,7 @@ export default function ProductActions() {
                 </SheetDescription>
               </SheetHeader>
               <div className="mt-6">
-                <CreateProduct />
+                <CreateProduct onSuccess={handleSuccess} />
               </div>
             </SheetContent>
           </Sheet>
