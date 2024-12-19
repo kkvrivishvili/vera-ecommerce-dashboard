@@ -24,6 +24,8 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Sheet, SheetClose } from "@/components/ui/sheet";
+import { ImageUpload } from "@/components/ui/image-upload";
+import Image from "next/image";
 
 import { useProductMutations } from "@/hooks/mutations/useProductMutations";
 import { useCategoriesQuery } from "@/hooks/queries/useCategoriesQuery";
@@ -46,7 +48,7 @@ export default function EditProductForm({ product, onSuccess }: EditProductFormP
     defaultValues: {
       title: product.title,
       description: product.description,
-      image_url: product.image_url,
+      image_url: product.image_url || undefined,
       price: product.price,
       discount_price: product.discount_price,
       category_id: product.category_id,
@@ -133,17 +135,35 @@ export default function EditProductForm({ product, onSuccess }: EditProductFormP
           name="image_url"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Image URL</FormLabel>
+              <FormLabel>Product Image</FormLabel>
               <FormControl>
-                <Input
-                  placeholder="https://example.com/image.jpg"
-                  {...field}
-                  value={field.value || ""}
-                  onChange={(e) => field.onChange(e.target.value || null)}
-                />
+                <div className="space-y-4">
+                  {field.value && (
+                    <div className="relative w-40 h-40">
+                      <Image
+                        src={field.value}
+                        alt="Product image"
+                        fill
+                        className="object-cover rounded-md"
+                      />
+                    </div>
+                  )}
+                  <ImageUpload
+                    onUploadComplete={(url) => {
+                      field.onChange(url);
+                    }}
+                    onUploadError={(error) => {
+                      toast({
+                        title: "Error",
+                        description: "Failed to upload image",
+                        variant: "destructive",
+                      });
+                    }}
+                  />
+                </div>
               </FormControl>
               <FormDescription>
-                A direct link to your product&apos;s image.
+                Upload or change the product image.
               </FormDescription>
               <FormMessage />
             </FormItem>

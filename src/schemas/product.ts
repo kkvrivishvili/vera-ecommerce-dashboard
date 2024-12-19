@@ -13,8 +13,7 @@ export const productSchema = z.object({
     .nullable(),
   image_url: z
     .string()
-    .url("Image URL must be a valid URL")
-    .nullable(),
+    .url("Image URL must be a valid URL"),
   price: z
     .number()
     .min(0, "Price must be greater than 0")
