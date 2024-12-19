@@ -1,4 +1,4 @@
-export type CategorySlug = 'protein' | 'lowCarb' | 'vegan' | 'vegetarian';
+export type CategorySlug = string;
 
 export interface Category {
   id: string;

@@ -52,9 +52,19 @@ export const fetchAllCategories = async () => {
 };
 
 export const createCategory = async (category: Omit<Category, 'id' | 'created_at' | 'updated_at'>) => {
-  // Validate category slug
-  if (!['protein', 'lowCarb', 'vegan', 'vegetarian'].includes(category.slug)) {
-    throw new Error('Invalid category slug');
+  // Validate that the slug is unique
+  const { data: existingCategory, error: checkError } = await supabase
+    .from('categories')
+    .select('id')
+    .eq('slug', category.slug)
+    .single();
+
+  if (existingCategory) {
+    throw new Error('A category with this slug already exists');
+  }
+
+  if (checkError && checkError.code !== 'PGRST116') {
+    throw checkError;
   }
 
   // Get max display_order
@@ -74,20 +84,30 @@ export const createCategory = async (category: Omit<Category, 'id' | 'created_at
 };
 
 export const updateCategory = async (id: string, updates: Partial<Omit<Category, 'id' | 'created_at' | 'updated_at'>>) => {
-  // If updating slug, validate it
-  if (updates.slug && !['protein', 'lowCarb', 'vegan', 'vegetarian'].includes(updates.slug)) {
-    throw new Error('Invalid category slug');
+  // If updating slug, validate it's unique
+  if (updates.slug) {
+    const { data: existingCategory, error: checkError } = await supabase
+      .from('categories')
+      .select('id')
+      .eq('slug', updates.slug)
+      .neq('id', id)
+      .single();
+
+    if (existingCategory) {
+      throw new Error('A category with this slug already exists');
+    }
   }
 
-  // First check if the category exists
-  const { data: category, error: fetchError } = await supabase
-    .from('categories')
-    .select('id')
-    .eq('id', id)
-    .single();
+  // If updating is_active to false, update all related products
+  if (updates.is_active === false) {
+    const { error: productsError } = await supabase
+      .from('products')
+      .update({ is_active: false })
+      .eq('category_id', id);
 
-  if (fetchError) {
-    throw new Error('Category not found');
+    if (productsError) {
+      throw productsError;
+    }
   }
 
   return updateRecord<Category>('categories', id, updates);

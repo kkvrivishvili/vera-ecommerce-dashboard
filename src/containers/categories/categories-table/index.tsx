@@ -1,6 +1,6 @@
 "use client";
 
-import { columns, skeletonColumns } from "./columns";
+import { skeletonColumns, useColumns } from "./columns";
 import CategoriesTable from "./Table";
 import TableSkeleton from "@/components/shared/TableSkeleton";
 import TableError from "@/components/shared/TableError";
@@ -24,6 +24,8 @@ export default function AllCategories({ perPage = 10 }: Props) {
     fetchFn: fetchCategories,
     perPage,
   });
+
+  const columns = useColumns();
 
   if (isLoading)
     return <TableSkeleton perPage={perPage} columns={skeletonColumns} />;
